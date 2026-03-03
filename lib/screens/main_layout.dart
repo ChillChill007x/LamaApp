@@ -86,12 +86,12 @@ class _MainLayoutState extends State<MainLayout> {
           ),
           BottomNavigationBarItem(
             // ปุ่มเมนูด่วน ทำให้ดูโดดเด่นขึ้น
-            icon: Icon(Icons.add_circle, size: 45, color: Color.fromRGBO(247,239,96,1.000)),
+            icon: Icon(Icons.add_circle, size: 60, color: Color.fromRGBO(247,239,96,1.000)),
             label: 'เมนู',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.account_balance_wallet),
-            label: 'กระเป๋าตัง',
+            icon: Icon(Icons.calendar_month_outlined),
+            label: 'ตารางงาน',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.dashboard_customize_sharp),

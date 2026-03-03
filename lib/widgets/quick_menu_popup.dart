@@ -107,10 +107,17 @@ class _QuickMenuPopupState extends State<QuickMenuPopup> {
                   labelText: 'เลือกกระเป๋าตัง',
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                 ),
-                items: wallets.map((w) => DropdownMenuItem<int>(
-                  value: w.id, // ✅ ใช้ w.id เป็น Value
-                  child: Text('${w.emojiIcon} ${w.name} (คงเหลือ: ฿${w.initialBalance.toStringAsFixed(2)})')
-                )).toList(),
+                items: wallets.map((w) {
+                // 💡 คำนวณยอดเงินปัจจุบันของกระเป๋าใบนี้
+                final currentBalance = provider.getWalletBalance(w.id!); 
+      
+                return DropdownMenuItem<int>(
+                  value: w.id,
+                  child: Text(
+                    '${w.emojiIcon} ${w.name} (คงเหลือ: ฿${currentBalance.toStringAsFixed(2)})', // 👈 เปลี่ยนจาก initialBalance เป็น currentBalance
+                  ),
+                );
+                }).toList(),
                 onChanged: (val) => setState(() => _selectedWalletId = val),
               ),
             const SizedBox(height: 15),

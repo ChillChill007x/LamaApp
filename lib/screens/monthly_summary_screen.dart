@@ -10,11 +10,10 @@ class MonthlySummaryScreen extends StatefulWidget {
 }
 
 class _MonthlySummaryScreenState extends State<MonthlySummaryScreen> {
-  // 🟢 สร้างตัวแปรเก็บเดือนและปีที่เลือก (ค่าเริ่มต้นคือเดือนและปีปัจจุบัน)
   int _selectedMonth = DateTime.now().month;
   int _selectedYear = DateTime.now().year;
+  int _selectedWalletId = 0; // 🟢 0 หมายถึง "ทุกกระเป๋าตัง"
 
-  // 🟢 รายชื่อเดือนสำหรับแสดงใน Dropdown (Index 0 คือ ทั้งปี)
   final List<String> _monthNames = [
     'ดูตลอดทั้งปี', 'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน',
     'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน',
@@ -45,62 +44,70 @@ class _MonthlySummaryScreenState extends State<MonthlySummaryScreen> {
         body: Column(
           children: [
             // ==========================================
-            // 🟢 แถบเลือก เดือน และ ปี
+            // 🟢 แถบเลือก กรองข้อมูล (เดือน, ปี, กระเป๋า)
             // ==========================================
             Container(
               color: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Row(
+              padding: const EdgeInsets.all(16),
+              child: Column(
                 children: [
-                  // เลือกเดือน
-                  Expanded(
-                    flex: 2,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      decoration: BoxDecoration(color: Colors.grey.shade100, borderRadius: BorderRadius.circular(10)),
-                      child: DropdownButtonHideUnderline(
-                        child: DropdownButton<int>(
-                          value: _selectedMonth,
-                          isExpanded: true,
-                          items: List.generate(13, (index) {
-                            return DropdownMenuItem(
+                  Row(
+                    children: [
+                      // เลือกเดือน
+                      Expanded(
+                        flex: 2,
+                        child: _buildDropdownWrapper(
+                          child: DropdownButton<int>(
+                            value: _selectedMonth,
+                            isExpanded: true,
+                            items: List.generate(13, (index) => DropdownMenuItem(
                               value: index,
-                              child: Text(_monthNames[index], style: TextStyle(fontWeight: index == 0 ? FontWeight.bold : FontWeight.normal)),
-                            );
-                          }),
-                          onChanged: (value) {
-                            setState(() {
-                              _selectedMonth = value!;
-                            });
-                          },
+                              child: Text(_monthNames[index]),
+                            )),
+                            onChanged: (val) => setState(() => _selectedMonth = val!),
+                          ),
                         ),
                       ),
-                    ),
+                      const SizedBox(width: 10),
+                      // เลือกปี
+                      Expanded(
+                        flex: 1,
+                        child: _buildDropdownWrapper(
+                          child: DropdownButton<int>(
+                            value: _selectedYear,
+                            isExpanded: true,
+                            items: List.generate(5, (index) {
+                              int year = DateTime.now().year - index;
+                              return DropdownMenuItem(value: year, child: Text(year.toString()));
+                            }),
+                            onChanged: (val) => setState(() => _selectedYear = val!),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: 10),
-                  // เลือกปี
-                  Expanded(
-                    flex: 1,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      decoration: BoxDecoration(color: Colors.grey.shade100, borderRadius: BorderRadius.circular(10)),
-                      child: DropdownButtonHideUnderline(
+                  const SizedBox(height: 10),
+                  // 🔵 เลือกกระเป๋าตัง
+                  Consumer<FinanceProvider>(
+                    builder: (context, provider, child) {
+                      return _buildDropdownWrapper(
                         child: DropdownButton<int>(
-                          value: _selectedYear,
+                          value: _selectedWalletId,
                           isExpanded: true,
-                          // สร้างตัวเลือกปีย้อนหลัง 5 ปี
-                          items: List.generate(5, (index) {
-                            int year = DateTime.now().year - index;
-                            return DropdownMenuItem(value: year, child: Text(year.toString()));
-                          }),
-                          onChanged: (value) {
-                            setState(() {
-                              _selectedYear = value!;
-                            });
-                          },
+                          items: [
+                            const DropdownMenuItem(
+                              value: 0, 
+                              child: Text('👛 ทุกกระเป๋าตัง', style: TextStyle(fontWeight: FontWeight.bold))
+                            ),
+                            ...provider.wallets.map((w) => DropdownMenuItem(
+                              value: w.id,
+                              child: Text('${w.emojiIcon} ${w.name}'),
+                            )),
+                          ],
+                          onChanged: (val) => setState(() => _selectedWalletId = val!),
                         ),
-                      ),
-                    ),
+                      );
+                    },
                   ),
                 ],
               ),
@@ -112,15 +119,15 @@ class _MonthlySummaryScreenState extends State<MonthlySummaryScreen> {
             Expanded(
               child: Consumer<FinanceProvider>(
                 builder: (context, provider, child) {
-                  // 🟢 1. กรองข้อมูลตาม เดือน/ปี ที่ผู้ใช้เลือก
+                  // 🟢 กรองข้อมูลตาม เดือน/ปี/กระเป๋า ที่เลือก
                   final filteredTransactions = provider.transactions.where((tx) {
                     bool matchYear = tx.dateTime.year == _selectedYear;
-                    // ถ้า _selectedMonth เป็น 0 คือให้โชว์ทั้งหมด ไม่ต้องกรองเดือน
                     bool matchMonth = _selectedMonth == 0 ? true : tx.dateTime.month == _selectedMonth;
-                    return matchYear && matchMonth;
+                    bool matchWallet = _selectedWalletId == 0 ? true : tx.walletId == _selectedWalletId;
+                    return matchYear && matchMonth && matchWallet;
                   }).toList();
 
-                  // 🟢 2. แยกรายจ่าย และคำนวณยอดรวมใหม่
+                  // คำนวณรายจ่าย
                   final expenses = filteredTransactions.where((tx) => tx.type == 'expense').toList();
                   double totalExpense = 0;
                   Map<String, double> expenseTotals = {};
@@ -130,7 +137,7 @@ class _MonthlySummaryScreenState extends State<MonthlySummaryScreen> {
                   }
                   var sortedExpenses = expenseTotals.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
 
-                  // 🟢 3. แยกรายรับ และคำนวณยอดรวมใหม่
+                  // คำนวณรายรับ
                   final incomes = filteredTransactions.where((tx) => tx.type == 'income').toList();
                   double totalIncome = 0;
                   Map<String, double> incomeTotals = {};
@@ -142,19 +149,17 @@ class _MonthlySummaryScreenState extends State<MonthlySummaryScreen> {
 
                   return TabBarView(
                     children: [
-                      // หน้าที่ 1: รายจ่าย
                       _buildSummaryTab(
-                        title: _selectedMonth == 0 ? 'รายจ่ายรวมปี $_selectedYear' : 'รายจ่ายรวมเดือนนี้',
-                        totalAmount: totalExpense, // ใช้ค่ายอดรวมที่เพิ่งคำนวณ
+                        title: _selectedMonth == 0 ? 'รายจ่ายรวมปี $_selectedYear' : 'รายจ่ายรวมช่วงนี้',
+                        totalAmount: totalExpense,
                         categories: sortedExpenses,
                         themeColor: Colors.redAccent,
                         icon: Icons.receipt_long,
                         prefix: '-',
                       ),
-                      // หน้าที่ 2: รายรับ
                       _buildSummaryTab(
-                        title: _selectedMonth == 0 ? 'รายรับรวมปี $_selectedYear' : 'รายรับรวมเดือนนี้',
-                        totalAmount: totalIncome, // ใช้ค่ายอดรวมที่เพิ่งคำนวณ
+                        title: _selectedMonth == 0 ? 'รายรับรวมปี $_selectedYear' : 'รายรับรวมช่วงนี้',
+                        totalAmount: totalIncome,
                         categories: sortedIncomes,
                         themeColor: Colors.green,
                         icon: Icons.account_balance_wallet,
@@ -171,7 +176,19 @@ class _MonthlySummaryScreenState extends State<MonthlySummaryScreen> {
     );
   }
 
-  // ฟังก์ชันวาดหน้าจอสรุป (คงไว้เหมือนเดิม)
+  // Helper Widget สำหรับแต่ง Dropdown ให้สวยงาม
+  Widget _buildDropdownWrapper({required Widget child}) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade100,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.grey.shade300),
+      ),
+      child: DropdownButtonHideUnderline(child: child),
+    );
+  }
+
   Widget _buildSummaryTab({
     required String title,
     required double totalAmount,
