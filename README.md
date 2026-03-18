@@ -73,7 +73,7 @@ dependencies:
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/yourusername/lma-app.git
+git clone https://github.com/ChillChill007x/lma-app.git
 cd lma-app
 
 # 2. Install dependencies
