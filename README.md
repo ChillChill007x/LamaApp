@@ -1,4 +1,4 @@
-# 💰 LMA App — Ledger Management Application
+# 💰 LamaApp — Ledger Management Application
 
 > **Personal Finance Manager** built with Flutter & Supabase  
 > แอปพลิเคชันบันทึกรายรับ-รายจ่ายส่วนบุคคล พัฒนาด้วย Flutter & Supabase
@@ -16,7 +16,7 @@
 ## 🇬🇧 English
 
 ### About
-LMA App (Ledger Management Application) is a cross-platform personal finance management app built with Flutter. It helps users track income and expenses, manage multiple wallets, set savings goals, and sync data securely to the cloud via Supabase.
+LamaApp (Ledger Management Application) is a cross-platform personal finance management app built with Flutter. It helps users track income and expenses, manage multiple wallets, set savings goals, and sync data securely to the cloud via Supabase.
 
 ### ✨ Features
 
@@ -73,8 +73,8 @@ dependencies:
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/ChillChill007x/lma-app.git
-cd lma-app
+git clone https://github.com/yourusername/LamaApp.git
+cd LamaApp
 
 # 2. Install dependencies
 flutter pub get
@@ -154,7 +154,7 @@ Local-first Architecture:
 ## 🇹🇭 ภาษาไทย
 
 ### เกี่ยวกับโปรเจค
-LMA App (Ledger Management Application) คือแอปพลิเคชันจัดการการเงินส่วนบุคคลแบบ Cross-platform พัฒนาด้วย Flutter ช่วยให้ผู้ใช้ติดตามรายรับ-รายจ่าย จัดการกระเป๋าเงินหลายบัญชี ตั้งเป้าหมายการออม และสำรองข้อมูลบนคลาวด์ผ่าน Supabase อย่างปลอดภัย
+LamaApp (Ledger Management Application) คือแอปพลิเคชันจัดการการเงินส่วนบุคคลแบบ Cross-platform พัฒนาด้วย Flutter ช่วยให้ผู้ใช้ติดตามรายรับ-รายจ่าย จัดการกระเป๋าเงินหลายบัญชี ตั้งเป้าหมายการออม และสำรองข้อมูลบนคลาวด์ผ่าน Supabase อย่างปลอดภัย
 
 ### ✨ ฟีเจอร์หลัก
 
@@ -188,8 +188,8 @@ OCR        : google_mlkit_text_recognition
 
 ```bash
 # 1. Clone โปรเจค
-git clone https://github.com/yourusername/lma-app.git
-cd lma-app
+git clone https://github.com/ChillChill007x/LamaApp.git
+cd LamaApp
 
 # 2. ติดตั้ง dependencies
 flutter pub get
