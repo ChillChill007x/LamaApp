@@ -1,15 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'providers/finance_provider.dart';
+import 'providers/user_provider.dart';
+import 'providers/auth_provider.dart';
 import 'screens/splash_screen.dart';
+import 'services/notification_service.dart';
+import 'config/supabase_config.dart';
 
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
 
-void main() {
+  // Init Supabase
+  await Supabase.initialize(
+    url: SupabaseConfig.url,
+    anonKey: SupabaseConfig.anonKey,
+  );
+
+  await NotificationService().init();
+
   runApp(
-    // ใช้ MultiProvider เผื่ออนาคตคุณมี Provider ตัวอื่นเพิ่มเข้ามา
     MultiProvider(
       providers: [
+        ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => FinanceProvider()),
+        ChangeNotifierProvider(create: (_) => UserProvider()..load()),
       ],
       child: const MyApp(),
     ),
@@ -23,12 +38,17 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Finance App',
-      debugShowCheckedModeBanner: false, // เอาแถบ Debug สีแดงมุมขวาบนออก
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primarySwatch: Colors.blue,
-        fontFamily: 'iannnnn', // แนะนำให้ใช้ฟอนต์ไทยสวยๆ (ถ้ามี)
+        fontFamily: 'iannnnn',
+        scaffoldBackgroundColor: Colors.grey[100],
+        appBarTheme: const AppBarTheme( 
+          backgroundColor: Colors.white,
+          elevation: 0,
+          foregroundColor: Colors.black87,
+        ),
       ),
-      // กำหนดให้หน้าแรกที่เปิดมาคือ SplashScreen
       home: const SplashScreen(),
     );
   }

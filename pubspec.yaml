@@ -14,7 +14,17 @@ dependencies:
   cupertino_icons: ^1.0.8
   provider: ^6.1.5+1
   sqflite: ^2.4.2
-  path_provider: ^2.1.5
+  path_provider: ^2.1.5 # ← เก็บรูป avatar
+  flutter_local_notifications: ^21.0.0
+  timezone: ^0.11.0
+  fl_chart: ^1.2.0 
+  shared_preferences: ^2.3.0
+  image_picker: ^1.1.2
+  path: ^1.9.0
+  supabase_flutter: ^2.5.0
+  google_mlkit_text_recognition: ^0.13.0
+
+  
 
 dev_dependencies:
   flutter_test:
@@ -32,6 +42,7 @@ flutter:
     - family: iannnnn
       fonts:
         - asset: assets/images/front/iannnnn-DOG-Regular.ttf 
+
 flutter_launcher_icons:
   android: "launcher_icon"
   ios: true

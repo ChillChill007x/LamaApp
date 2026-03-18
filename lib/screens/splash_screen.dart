@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/finance_provider.dart';
-import 'main_layout.dart'; // เดี๋ยวเราจะสร้างไฟล์นี้ในขั้นตอนถัดไป
+import '../providers/auth_provider.dart';
+import '../services/sync_service.dart';
+import 'main_layout.dart';
+import 'login_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({Key? key}) : super(key: key);
@@ -14,26 +17,38 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    _loadDataAndNavigate();
+    _init();
   }
 
-  // ฟังก์ชันโหลดข้อมูลและเปลี่ยนหน้า
-  Future<void> _loadDataAndNavigate() async {
+  Future<void> _init() async {
+    // โหลดข้อมูล local ก่อน
     try {
-      // ลองโหลดข้อมูล
       await Provider.of<FinanceProvider>(context, listen: false).loadData();
     } catch (e) {
-      // ถ้าโหลดข้อมูลพลาด ให้พิมพ์ Error บอกเราแต่ยังยอมให้ไปหน้าถัดไปได้
-      print("Error loading data: $e");
+      debugPrint('loadData error: $e');
     }
 
-    // หน่วงเวลา 2 วินาที
-    await Future.delayed(const Duration(seconds: 2));
-    
-    if (mounted) {
+    // ถ้า login อยู่แล้ว ให้ sync จาก cloud (background)
+    final auth = Provider.of<AuthProvider>(context, listen: false);
+    if (auth.isAuthenticated) {
+      SyncService().pullFromCloud(); // ไม่ await — ทำ background
+    }
+
+    await Future.delayed(const Duration(milliseconds: 1500));
+
+    if (!mounted) return;
+
+    // Route ตาม auth status
+    // ถ้า login อยู่ → MainLayout, ถ้าไม่ → LoginScreen
+    if (auth.isAuthenticated) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const MainLayout()),
+        MaterialPageRoute(builder: (_) => const MainLayout()),
+      );
+    } else {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
       );
     }
   }
@@ -45,26 +60,29 @@ class _SplashScreenState extends State<SplashScreen> {
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          // ⚠️ เอาคำว่า const หน้าวงเล็บ [ ออก เพื่อให้ใส่รูปภาพได้
           children: [
-            // 🟢 เปลี่ยนจาก Icon มาเป็น Image.asset แทน
             Image.asset(
-              'assets/images/loading.png', // ⚠️ เปลี่ยนโลโก้เป็นชื่อไฟล์ของคุณ (เช่น logo.jpg)
-              width: 250,  // ปรับความกว้างของรูปตรงนี้ให้ใหญ่/เล็กได้ตามต้องการ
-              height: 250, // ปรับความสูงให้สัมพันธ์กัน
-              fit: BoxFit.contain, // จัดให้รูปพอดี ไม่เบี้ยว
-            ),
-            const SizedBox(height: 20),
-            const Text(
-              'LMA APP', // ชื่อแอปของคุณ
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Colors.blueAccent,
+              'assets/images/loading.png',
+              width: 200, height: 200,
+              fit: BoxFit.contain,
+              errorBuilder: (_, __, ___) => Container(
+                width: 80, height: 80,
+                decoration: BoxDecoration(
+                  color: Colors.blue.shade50,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: const Center(
+                    child: Text('💰', style: TextStyle(fontSize: 40))),
               ),
             ),
             const SizedBox(height: 20),
-            const CircularProgressIndicator(), // ไอคอนหมุนๆ แสดงการโหลด
+            const Text('LMA APP',
+                style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.blueAccent)),
+            const SizedBox(height: 20),
+            const CircularProgressIndicator(),
           ],
         ),
       ),

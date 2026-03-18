@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'overview_screen.dart';
 import 'transaction_screen.dart';
-import 'wallet_screen.dart';
+import 'savings_screen.dart';
+import 'work_screen.dart';
 import '../widgets/quick_menu_popup.dart';
-import 'monthly_summary_screen.dart'; 
 
 class MainLayout extends StatefulWidget {
   const MainLayout({Key? key}) : super(key: key);
@@ -15,91 +15,114 @@ class MainLayout extends StatefulWidget {
 class _MainLayoutState extends State<MainLayout> {
   int _selectedIndex = 0;
 
-  // รายการหน้าจอที่จะสลับไปมา (เรียงตาม Index 0, 1, 2)
+  // 0=ภาพรวม, 1=ธุรกรรม, 2=ออมเงิน, 3=งาน
   final List<Widget> _pages = [
     const OverviewScreen(),
     const TransactionScreen(),
-    const WalletScreen(),
-    const MonthlySummaryScreen(),
+    const SavingsScreen(),
+    const WalletScreen(),   // work_screen.dart → class WalletScreen
   ];
 
-  // ฟังก์ชันเมื่อผู้ใช้กดเมนูด้านล่าง
-  void _onItemTapped(int index) {
-    if (index == 2) {
-      // ถ้ากดปุ่มตำแหน่งที่ 3 (เมนูตรงกลาง) โชว์ Popup
-      _showQuickMenu();
-    } else {
-      // สลับหน้าจอ
-      setState(() {
-        _selectedIndex = index > 2 ? index - 1 : index;
-      });
-    }
-  }
+  static const _navItems = [
+    _NavItem(Icons.dashboard_outlined,          Icons.dashboard,              'ภาพรวม'),
+    _NavItem(Icons.list_alt_outlined,           Icons.list_alt,               'ธุรกรรม'),
+    _NavItem(Icons.savings_outlined,            Icons.savings,                'ออมเงิน'),
+    _NavItem(Icons.calendar_month_outlined,     Icons.calendar_month,         'งาน'),
+  ];
 
-  // ฟังก์ชันแสดงป๊อปอัพ Quick Menu
   void _showQuickMenu() {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent, 
-      builder: (context) => const QuickMenuPopup(),
+      backgroundColor: Colors.transparent,
+      builder: (_) => const QuickMenuPopup(),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    const navBg   = Color.fromRGBO(159, 235, 249, 1.0);
+    const fabColor = Color.fromRGBO(247, 239, 96, 1.0);
+
     return Scaffold(
       body: _pages[_selectedIndex],
-      
-      // --- ส่วนของแถบเมนูด้านล่างที่ปรับปรุงใหม่ ---
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: const Color.fromRGBO(247,239,96,1.000), //  แก้สีพื้นหลังหลักของแถบเมนูที่นี่
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1), // ใส่เงาจางๆ ให้ดูมีมิติ
-              blurRadius: 10,
-              spreadRadius: 2,
-            ),
-          ],
-          // ถ้าอยากให้ขอบด้านบนโค้งมน สามารถเปิดใช้งานบรรทัดข้างล่างนี้ได้ครับ
-          // borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+
+      // ── FAB กลาง ─────────────────────────────────────
+      floatingActionButton: SizedBox(
+        width: 64,
+        height: 64,
+        child: FloatingActionButton(
+          onPressed: _showQuickMenu,
+          backgroundColor: fabColor,
+          elevation: 6,
+          shape: const CircleBorder(),
+          child: const Icon(Icons.add, size: 34, color: Colors.black87),
         ),
-        child: BottomNavigationBar(
-          backgroundColor: const Color.fromRGBO(159,235,249,1.000), // 🟢 ใส่สีเดียวกับ Container
-          elevation: 0, // ปิดเงาเดิมของเครื่องเพื่อใช้เงาจาก Container แทน
-          type: BottomNavigationBarType.fixed,
-          currentIndex: _selectedIndex >= 2 ? _selectedIndex + 1 : _selectedIndex,
-          onTap: _onItemTapped,
-          selectedItemColor: const Color.fromRGBO(247,239,96,1.000), // สีไอคอนที่เลือก
-          unselectedItemColor: const Color.fromARGB(255, 0, 0, 0), // สีไอคอนที่ไม่ได้เลือก
-          showSelectedLabels: true,
-          showUnselectedLabels: true,
-          items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.dashboard),
-            label: 'ภาพรวม',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.list_alt),
-            label: 'ธุรกรรม',
-          ),
-          BottomNavigationBarItem(
-            // ปุ่มเมนูด่วน ทำให้ดูโดดเด่นขึ้น
-            icon: Icon(Icons.add_circle, size: 60, color: Color.fromRGBO(247,239,96,1.000)),
-            label: 'เมนู',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_month_outlined),
-            label: 'ตารางงาน',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.dashboard_customize_sharp),
-            label: 'สรุป',
-          ),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+
+      // ── Bottom bar ────────────────────────────────────
+      bottomNavigationBar: BottomAppBar(
+        color: navBg,
+        shape: const CircularNotchedRectangle(),
+        notchMargin: 10,
+        height: 60,
+        padding: EdgeInsets.zero,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            _buildNavBtn(0),
+            _buildNavBtn(1),
+            const SizedBox(width: 72),
+            _buildNavBtn(2),
+            _buildNavBtn(3),
           ],
         ),
       ),
     );
   }
+
+  Widget _buildNavBtn(int index) {
+    final item     = _navItems[index];
+    final isActive = _selectedIndex == index;
+    const activeColor = Color.fromRGBO(247, 239, 96, 1.0);
+
+    return InkWell(
+      onTap: () => setState(() => _selectedIndex = index),
+      borderRadius: BorderRadius.circular(12),
+      child: SizedBox(
+        height: 60,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                isActive ? item.activeIcon : item.icon,
+                color: isActive ? activeColor : Colors.black54,
+                size: 24,
+              ),
+              const SizedBox(height: 2),
+              Text(
+                item.label,
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+                  color: isActive ? activeColor : Colors.black54,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _NavItem {
+  final IconData icon;
+  final IconData activeIcon;
+  final String label;
+  const _NavItem(this.icon, this.activeIcon, this.label);
 }
